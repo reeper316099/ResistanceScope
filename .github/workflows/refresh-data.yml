@@ -1,0 +1,77 @@
+# Monthly (and on demand) rebuild of data/ from the public NCBI files. It opens a PULL REQUEST for review and
+# never pushes to main. The download is about 2.3 GB, fetched one file at a time with a polite user agent and
+# backoff (see pipeline/download.py), so it stays within NCBI's expectations for monthly use.
+name: Refresh data
+
+on:
+  schedule:
+    - cron: "17 4 1 * *" # 04:17 UTC on the 1st of every month
+  workflow_dispatch:
+
+permissions:
+  contents: write # push a new branch (never main)
+  pull-requests: write # open the pull request
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pipeline/requirements-dev.txt
+      - run: pip install -r pipeline/requirements-dev.txt
+      - name: Remember the current data for the change summary
+        run: cp -r data "$RUNNER_TEMP/data-old"
+      - name: Download raw NCBI files (large; one at a time)
+        working-directory: pipeline
+        run: python -u download.py
+      - name: Build the aggregated data
+        working-directory: pipeline
+        run: python -u aggregate.py
+      - name: Validate (fails the job on any rule violation)
+        working-directory: pipeline
+        run: |
+          set -o pipefail
+          python validate.py --require-report 2>&1 | tee "$RUNNER_TEMP/validate.log"
+      - name: Independent spot-check against the raw files
+        working-directory: pipeline
+        run: python spot_check.py
+      - name: Pipeline tests
+        working-directory: pipeline
+        run: pytest -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Contract test (the new data must load through the app's zod schemas)
+        run: npx vitest run tests/unit/contract.test.ts tests/unit/countryData.test.ts
+      - name: Summarize what changed
+        run: python pipeline/summarize_changes.py "$RUNNER_TEMP/data-old" data --validation "$RUNNER_TEMP/validate.log" > "$RUNNER_TEMP/pr-body.md"
+      - name: Open a pull request if the data changed (never pushes to main)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet -- data pipeline/reports; then
+            echo "No data changes this month."
+            exit 0
+          fi
+          branch="data-refresh/$(date -u +%Y-%m-%d)"
+          if [ "$branch" = "main" ]; then echo "refusing to use main" >&2; exit 1; fi
+          version="$(node -p "require('./data/manifest.json').dataVersion")"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add data pipeline/reports/quality_report.json
+          git commit -m "Refresh data to $version"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "Refresh data to $version" --body-file "$RUNNER_TEMP/pr-body.md"

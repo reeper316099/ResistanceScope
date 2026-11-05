@@ -1,0 +1,87 @@
+# Continuous integration: runs on every pull request and every push to main.
+# It never downloads the large raw NCBI files (the pipeline is tested with small fixtures).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: App (format, types, lint, unit + data contract, Electron e2e)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Unit tests (includes the contract test that loads the real data/ folder through the zod schemas)
+        run: npm test
+      - name: Let Chromium use its sandbox on Ubuntu 24.04 runners
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Electron end-to-end tests (virtual display)
+        run: xvfb-run -a npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results
+          path: test-results/
+          if-no-files-found: ignore
+
+  pipeline:
+    name: Pipeline (ruff, pytest, validate the committed data)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pipeline/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: pytest -q
+      - name: Validate the committed data/ folder (same rules as the app's zod schemas)
+        run: python validate.py --require-report
+
+  package-smoke:
+    name: Packaged Linux app starts and passes its smoke tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build the unpacked Linux app
+        run: npm run dist:dir
+      - name: Let Chromium use its sandbox on Ubuntu 24.04 runners
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Run the packaged-app tests under a virtual display
+        run: xvfb-run -a npm run test:packaged
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: packaged-results
+          path: test-results/
+          if-no-files-found: ignore

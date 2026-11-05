@@ -2,7 +2,11 @@
   "name": "resistancescope",
   "version": "0.1.0",
   "description": "Offline desktop explorer for antibiotic-resistance genes in public bacterial genome data. Educational use only.",
-  "author": "reeper316099",
+  "author": {
+    "name": "reeper316099",
+    "email": "reeper316099@users.noreply.github.com",
+    "url": "https://github.com/reeper316099"
+  },
   "license": "MIT",
   "private": true,
   "main": "out/main/index.js",
@@ -26,6 +30,7 @@
     "chart.js": "4.6.1",
     "d3-geo": "3.1.2",
     "electron": "45.2.3",
+    "electron-builder": "26.18.0",
     "electron-vite": "6.0.0",
     "eslint": "10.14.0",
     "prettier": "3.9.10",
@@ -50,6 +55,10 @@
     "dev:bg": "node scripts/dev-background.mjs",
     "test:coverage": "vitest run --coverage",
     "icons": "electron scripts/make-icons.cjs",
-    "screenshots": "node scripts/screenshots.mjs"
-  }
+    "screenshots": "node scripts/screenshots.mjs",
+    "dist": "electron-vite build && electron-builder",
+    "dist:dir": "electron-vite build && electron-builder --dir",
+    "test:packaged": "playwright test packaged.spec.ts"
+  },
+  "desktopName": "resistancescope.desktop"
 }

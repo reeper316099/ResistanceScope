@@ -1,0 +1,81 @@
+# Packaging settings for electron-builder. Installers are UNSIGNED (see README, "Unsigned apps").
+appId: com.reeper316099.resistancescope
+productName: ResistanceScope
+copyright: Copyright © 2026 reeper316099
+
+directories:
+  buildResources: build # icon.icns, icon.ico, icon.png
+  output: release
+
+# Everything the renderer and main process need is bundled into out/ by Vite, so no node_modules ship.
+files:
+  - out/**/*
+  - package.json
+
+# The aggregated data is copied next to the app (not inside the archive); electron/main.ts reads resources/data.
+extraResources:
+  - from: data
+    to: data
+    filter:
+      - "**/*.json"
+
+asar: true
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+
+# Electron "fuses": switches flipped in the packaged binary so it cannot be repurposed as a Node runtime.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+  grantFileProtocolExtraPrivileges: false
+  resetAdHocDarwinSignature: true # keeps the unsigned macOS arm64 app launchable after the fuses are changed
+
+mac:
+  category: public.app-category.education
+  target:
+    - target: dmg
+      arch: universal # one download for Apple Silicon and Intel
+  identity: null # unsigned and not notarized
+  hardenedRuntime: false
+  gatekeeperAssess: false
+
+dmg:
+  title: ${productName} ${version}
+
+win:
+  target:
+    - target: nsis
+      arch: x64
+    - target: portable
+      arch: x64
+
+nsis:
+  oneClick: false
+  perMachine: false # per-user install, no administrator rights needed
+  allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-${version}-win-${arch}-setup.${ext}
+
+portable:
+  artifactName: ${productName}-${version}-win-${arch}-portable.${ext}
+
+linux:
+  target:
+    - target: AppImage
+      arch: x64
+    - target: deb
+      arch: x64
+  category: Education;Science
+  executableName: resistancescope
+  syncDesktopName: true
+  synopsis: Explore antibiotic-resistance genes in public bacterial genomes
+  description: An offline, educational explorer for resistance genes in public sequence data. Not for clinical use.
+  maintainer: reeper316099 <reeper316099@users.noreply.github.com>
+
+publish:
+  provider: github
+  owner: reeper316099
+  repo: ResistanceScope
+  releaseType: release
