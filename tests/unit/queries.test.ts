@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   compareOrganisms,
+  countrySkew,
   drugClassMatrix,
   drugClassRows,
   drugClassTrend,
@@ -14,11 +15,14 @@ import {
   isolatesPerYear,
   organismCoverage,
   organismsForDrugClass,
+  pooledGeneByCountry,
   pooledGeneTrend,
+  pooledSampleSizeByCountry,
   relatedGenes,
   sampleSizeByCountry,
   sourceShares,
   topGenes,
+  trimThinEnds,
   type TopGenesOptions,
 } from "../../src/core/queries";
 import { isShown } from "../../src/core/stats";
@@ -160,6 +164,33 @@ describe("trends by year", () => {
   });
 });
 
+describe("trimThinEnds", () => {
+  it("cuts leading and trailing years with fewer than minCellN isolates, in every series alike, and keeps inner gaps", () => {
+    const wide = structuredClone(A);
+    wide.byYear = { "2017": 2, "2018": 3, "2019": 10, "2020": 0, "2021": 50, "2022": 4 };
+    const geneA = wide.genes.find((g) => g.geneId === "geneA");
+    if (geneA) geneA.byYear = { "2019": 2, "2021": 30 };
+    wide.drugClassByYear = { "BETA-LACTAM": { "2019": 3, "2021": 32 } };
+    wide.drugClassByYearAll = wide.drugClassByYear;
+    const a = geneTrend(wide, "geneA", T) ?? [];
+    const b = drugClassTrend(wide, "BETA-LACTAM", T, "core");
+    const [ta, tb] = trimThinEnds([a, b], T);
+    expect(ta?.map((p) => p.year)).toEqual([2019, 2020, 2021]); // 2017, 2018 and 2022 are thin ends; 2020 is an inner gap
+    expect(tb?.map((p) => p.year)).toEqual([2019, 2020, 2021]);
+    expect(ta?.[1]?.estimate.flag).toBe("hidden");
+  });
+
+  it("returns the series untouched when nothing has enough isolates, and handles no series", () => {
+    const thin = structuredClone(B);
+    thin.byYear = { "2020": 1, "2021": 2 };
+    const g = thin.genes[0];
+    if (g) g.byYear = {};
+    const pts = geneTrend(thin, "geneA", T) ?? [];
+    expect(trimThinEnds([pts], T)[0]).toHaveLength(2);
+    expect(trimThinEnds([], T)).toEqual([]);
+  });
+});
+
 describe("geography and sources", () => {
   it("rolls a gene up by country, largest sample first, with per-country flags", () => {
     const rows = geneByCountry(A, "geneA", T) ?? [];
@@ -201,6 +232,34 @@ describe("geography and sources", () => {
     const c = organismCoverage(A, T);
     expect(c.withYear).toMatchObject({ k: 100, n: 100 });
     expect(c.withCountry).toMatchObject({ k: 83, n: 100 });
+  });
+});
+
+describe("pooled geography and sampling skew", () => {
+  it("pools a gene's country counts over organisms (USA 30+20 of 60+40, DEU 10 of 20, GBR 2 of 3)", () => {
+    const rows = pooledGeneByCountry([A, B], "geneA", T);
+    expect(rows.map((r) => [r.iso3, r.estimate.k, r.estimate.n, r.estimate.flag])).toEqual([
+      ["USA", 50, 100, "ok"],
+      ["DEU", 10, 20, "low"],
+      ["GBR", 2, 3, "hidden"],
+    ]);
+  });
+
+  it("pools sample sizes per country with flags", () => {
+    expect(pooledSampleSizeByCountry([A, B], T)).toEqual([
+      { iso3: "USA", n: 100, flag: "ok" },
+      { iso3: "DEU", n: 20, flag: "low" },
+      { iso3: "GBR", n: 3, flag: "hidden" },
+    ]);
+  });
+
+  it("finds how concentrated each organism's sampling is, most skewed first (B: 40 of 40 USA; A: 60 of 83)", () => {
+    const rows = countrySkew([A, B]);
+    expect(rows.map((r) => [r.name, r.topCountry, r.topCountryN, r.knownCountryN])).toEqual([
+      ["Fixture bacterium B", "USA", 40, 40],
+      ["Fixture bacterium A", "USA", 60, 83],
+    ]);
+    expect(countrySkew([{ ...structuredClone(A), byCountry: {} }])).toEqual([]);
   });
 });
 

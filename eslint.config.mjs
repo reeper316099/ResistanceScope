@@ -31,9 +31,19 @@ export default tseslint.config(
       "no-implied-eval": "error",
     },
   },
-  { files: ["**/*.mjs", "**/*.js"], ...tseslint.configs.disableTypeChecked },
+  { files: ["**/*.mjs", "**/*.js", "**/*.cjs"], ...tseslint.configs.disableTypeChecked },
   {
-    files: ["**/*.mjs", "**/*.js"],
-    languageOptions: { globals: { console: "readonly", process: "readonly" } },
+    files: ["**/*.mjs", "**/*.js", "**/*.cjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        require: "readonly",
+        Buffer: "readonly",
+        __dirname: "readonly",
+        setTimeout: "readonly",
+      },
+    },
   },
+  { files: ["**/*.cjs"], rules: { "@typescript-eslint/no-require-imports": "off" } },
 );

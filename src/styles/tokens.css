@@ -1,32 +1,46 @@
 /* Design tokens. Dark mode overrides the same variables via [data-theme="dark"]. */
 :root {
-  --bg: #f4f7f6;
+  --bg: #f1f5f4;
   --surface: #ffffff;
-  --surface-2: #eaf1ef;
+  --surface-2: #e8efed;
   --text: #14211f;
-  --text-muted: #4a5b58;
-  --border: #cfdad7;
+  --text-muted: #44544f;
+  --border: #c3d1cd;
   --primary: #0f3d3e;
   --accent-teal: #0e7c7b;
+  --link: #0b6a69; /* darker than the brand teal so link text reaches 4.5:1 on tinted backgrounds */
+  --on-accent: #ffffff;
   --secondary: #84cc16;
   --accent: #f97316;
   --danger: #dc2626;
   --ok: #16a34a;
   --nodata: #94a3b8;
+  --warn-bg: #fff1e0;
+  --warn-text: #8a3a05;
+  --good-bg: #e2f5e7;
+  --good-text: #14532d;
   --shadow: 0 2px 10px rgb(15 61 62 / 12%);
   --radius: 14px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --transition: 180ms ease;
+  --rail-w: 214px;
 }
 
 [data-theme="dark"] {
-  --bg: #0c1615;
-  --surface: #14231f;
-  --surface-2: #1b2f2a;
+  --bg: #0b1514;
+  --surface: #13221f;
+  --surface-2: #1c302c;
   --text: #e6f0ed;
-  --text-muted: #a3b8b3;
-  --border: #2b4540;
+  --text-muted: #a9bdb8;
+  --border: #2f4a44;
   --primary: #0f3d3e;
-  --accent-teal: #34b8b6;
+  --accent-teal: #4cc9c6;
+  --link: #4cc9c6;
+  --on-accent: #04201f;
+  --nodata: #6b7f89;
+  --warn-bg: #3b2410;
+  --warn-text: #fdba74;
+  --good-bg: #123322;
+  --good-text: #86efac;
   --shadow: 0 2px 12px rgb(0 0 0 / 45%);
 }

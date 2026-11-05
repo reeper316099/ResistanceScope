@@ -40,7 +40,7 @@ test("launches with the right title and shows the validated data version in the 
   await expect(page.locator("#data-footer")).toHaveText(
     /^Data: v\d{4}\.\d{2}\.\d{2} · built \d{4}-\d{2}-\d{2} · App v0\.1\.0$/,
   );
-  await expect(page.getByText("Data loaded and validated")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
   await expect(page.getByRole("note")).toContainText("not random samples");
 });
 

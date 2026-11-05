@@ -86,6 +86,10 @@ function sendAction(action: MenuAction): void {
 function createWindow(): void {
   const state = loadWindowState();
   const win = new BrowserWindow({
+    // Packaged apps get their icon from the installer; this covers `npm run dev` on Windows and Linux.
+    ...(process.platform !== "darwin" && !app.isPackaged
+      ? { icon: join(app.getAppPath(), "build", "icon.png") }
+      : {}),
     ...(state.x !== undefined && state.y !== undefined ? { x: state.x, y: state.y } : {}),
     width: state.width,
     height: state.height,
@@ -139,6 +143,9 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   void app.whenReady().then(() => {
+    if (process.platform === "darwin" && !app.isPackaged && !backgroundMode) {
+      app.dock?.setIcon(join(app.getAppPath(), "build", "icon.png"));
+    }
     protocol.handle(APP_SCHEME, handleAppRequest);
     hardenSession(session.defaultSession, devOrigin);
     registerIpc(() => mainWindow, isAppUrl);

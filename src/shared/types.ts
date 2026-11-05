@@ -85,5 +85,13 @@ export function isMenuAction(value: unknown): value is MenuAction {
 /** The four main views of the app. */
 export type ViewName = "organism" | "gene" | "drug-class" | "overview";
 
+/** Where the user is: a view plus (for the entity views) which entity, or null for "pick one". */
+export type Route =
+  | { view: "organism"; taxonId: number | null }
+  | { view: "gene"; geneId: string | null }
+  | { view: "drug-class"; classId: string | null }
+  | { view: "overview" }
+  | { view: "about"; section?: string };
+
 /** Where the renderer fetches shipped data from; identical in dev and in the packaged app. */
 export const DATA_BASE_URL = "app://app/data";

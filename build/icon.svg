@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0F3D3E"/>
+      <stop offset="1" stop-color="#1F8A52"/>
+    </linearGradient>
+    <linearGradient id="capsule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#84CC16"/>
+      <stop offset="0.5" stop-color="#84CC16"/>
+      <stop offset="0.5" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#F8FAFC"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+  <!-- petri dish: outer rim and inner ring -->
+  <circle cx="500" cy="500" r="318" fill="none" stroke="#F8FAFC" stroke-width="40"/>
+  <circle cx="500" cy="500" r="262" fill="#ffffff" fill-opacity="0.08" stroke="#F8FAFC" stroke-opacity="0.5" stroke-width="10"/>
+  <!-- bacterial colonies -->
+  <circle cx="400" cy="400" r="58" fill="#F8FAFC"/>
+  <circle cx="548" cy="356" r="34" fill="#F8FAFC" fill-opacity="0.9"/>
+  <circle cx="354" cy="556" r="40" fill="#F8FAFC" fill-opacity="0.9"/>
+  <circle cx="470" cy="520" r="24" fill="#F8FAFC" fill-opacity="0.85"/>
+  <!-- capsule (an antibiotic) crossing the rim -->
+  <g transform="rotate(-38 690 700)">
+    <rect x="560" y="640" width="260" height="120" rx="60" fill="url(#capsule)" stroke="#0F3D3E" stroke-width="14"/>
+    <line x1="690" y1="640" x2="690" y2="760" stroke="#0F3D3E" stroke-width="10"/>
+  </g>
+</svg>

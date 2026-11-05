@@ -177,6 +177,21 @@ function yearRange(byYear: Record<string, number>): number[] | null {
   return Array.from({ length: max - min + 1 }, (_, i) => min + i);
 }
 
+/**
+ * Drops leading and trailing years with fewer than minCellN isolates from several trend series that share
+ * the same denominators (so every series is cut at the same place). Gaps inside the range are kept.
+ */
+export function trimThinEnds(series: TrendPoint[][], t: Thresholds): TrendPoint[][] {
+  const reference = series[0];
+  if (!reference) return series;
+  let start = 0;
+  let end = reference.length - 1;
+  while (start <= end && (reference[start]?.isolates ?? 0) < t.minCellN) start++;
+  while (end >= start && (reference[end]?.isolates ?? 0) < t.minCellN) end--;
+  if (start > end) return series; // nothing has enough isolates: leave as is (the panel will say so)
+  return series.map((points) => points.slice(start, end + 1));
+}
+
 /** Isolates per year over a continuous year range (years with none are 0), for the companion bar chart. */
 export function isolatesPerYear(shard: OrganismShard): { year: number; isolates: number }[] {
   return (yearRange(shard.byYear) ?? []).map((year) => ({
@@ -402,6 +417,66 @@ export function pooledGeneTrend(
     isolates: n.get(year) ?? 0,
     estimate: estimate(k.get(year) ?? 0, n.get(year) ?? 0, t),
   }));
+}
+
+/**
+ * One gene's prevalence per country pooled over all loaded organisms (sums of numerators and denominators).
+ * Like the pooled trend, this describes the database's mix of organisms, not a real population.
+ */
+export function pooledGeneByCountry(
+  shards: OrganismShard[],
+  geneId: string,
+  t: Thresholds,
+): CountryEstimate[] {
+  const k = new Map<string, number>();
+  const n = new Map<string, number>();
+  for (const s of shards) {
+    for (const [c, count] of Object.entries(s.byCountry)) n.set(c, (n.get(c) ?? 0) + count);
+    for (const [c, count] of Object.entries(shardGenes(s).get(geneId)?.byCountry ?? {}))
+      k.set(c, (k.get(c) ?? 0) + count);
+  }
+  return [...n.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([iso3, total]) => ({ iso3, estimate: estimate(k.get(iso3) ?? 0, total, t) }));
+}
+
+/** Isolates per country pooled over all loaded organisms (for the sample-count map). */
+export function pooledSampleSizeByCountry(shards: OrganismShard[], t: Thresholds): CountryCount[] {
+  const n = new Map<string, number>();
+  for (const s of shards)
+    for (const [c, count] of Object.entries(s.byCountry)) n.set(c, (n.get(c) ?? 0) + count);
+  return [...n.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([iso3, total]) => ({ iso3, n: total, flag: flagFor(total, t) }));
+}
+
+export interface CountrySkew {
+  taxonId: number;
+  name: string;
+  /** Isolates with a known country. */
+  knownCountryN: number;
+  topCountry: string;
+  topCountryN: number;
+}
+
+/** For each organism, which single country contributes the most isolates (used to explain sampling bias). */
+export function countrySkew(shards: OrganismShard[]): CountrySkew[] {
+  const rows: CountrySkew[] = [];
+  for (const s of shards) {
+    const entries = Object.entries(s.byCountry).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
+    const top = entries[0];
+    if (!top) continue;
+    rows.push({
+      taxonId: s.taxonId,
+      name: s.name,
+      knownCountryN: entries.reduce((sum, [, n]) => sum + n, 0),
+      topCountry: top[0],
+      topCountryN: top[1],
+    });
+  }
+  return rows.sort((a, b) => b.topCountryN / b.knownCountryN - a.topCountryN / a.knownCountryN);
 }
 
 /** Other genes in the same family as the given gene. */
