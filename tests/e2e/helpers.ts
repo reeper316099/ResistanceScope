@@ -1,5 +1,5 @@
 // Shared helpers for the end-to-end tests.
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { _electron as electron, type ElectronApplication, type Page } from "@playwright/test";
@@ -19,6 +19,7 @@ export async function launch(
   const app = await electron.launch({
     args: [".", `--user-data-dir=${userData}`],
     env: { ...process.env, RS_BACKGROUND: "1", ...extraEnv },
+    timeout: 30_000, // fail fast with Playwright's message (it includes the app's output) instead of hanging for a minute
   });
   const page = await app.firstWindow();
   const errors: string[] = [];
@@ -59,4 +60,15 @@ export async function openBySearch(page: Page, text: string): Promise<void> {
   await page.getByRole("option").first().waitFor();
   await page.keyboard.press("Enter");
   await settled(page);
+}
+
+/**
+ * Removes Chromium's single-instance lock files from a profile folder. A test harness can close the first app
+ * instance before Chromium has cleaned them up, and the next launch with the same profile would then quit at once
+ * because it believes another instance is still running.
+ */
+export function clearInstanceLock(userData: string): void {
+  for (const name of ["SingletonLock", "SingletonSocket", "SingletonCookie"]) {
+    rmSync(join(userData, name), { force: true });
+  }
 }

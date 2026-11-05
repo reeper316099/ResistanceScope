@@ -174,8 +174,10 @@ Details, numbers and the data-quality table are in [`docs/TEST-REPORT.md`](docs/
 | macOS Intel (x86_64) slice of the universal app | **UNTESTED LOCALLY** (built, never launched) |
 | Windows installer and portable `.exe` | Cross-built here, **never launched. UNTESTED LOCALLY, verified only by CI** |
 | Linux AppImage and `.deb` | Cross-built here, **never launched. UNTESTED LOCALLY, verified only by CI** |
-| `ci.yml`, `release.yml`, `refresh-data.yml` | Checked with `actionlint`; **never run. UNTESTED LOCALLY, verified only by CI** |
-| Linux packaged smoke test (job `package-smoke`) | **UNTESTED LOCALLY, verified only by CI** |
+| `ci.yml` on GitHub (first run, 2026-11-05): `pipeline` job and the packaged Linux smoke test (`package-smoke`) | **Ran on GitHub and passed** |
+| `ci.yml` job `app`: 47 of 48 Electron e2e tests passed on Linux; the restart-persistence test hung (see CHANGELOG) | **Partly passing; fix pushed, awaiting a green re-run** |
+| `release.yml` on GitHub: builds and uploads installers for all three systems | **Ran and succeeded (reported by the author); installers not yet launched on Windows or Linux** |
+| `refresh-data.yml` | Checked with `actionlint`; **never run. UNTESTED LOCALLY, verified only by CI** |
 | Time and disk used by the monthly refresh on a GitHub runner | **Not measured** |
 | Screen reader use; full keyboard-only use of the heatmap (a table alternative exists) | **Not tested** |
 

@@ -3,6 +3,14 @@
 All notable changes to ResistanceScope are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/);
 versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- CI: the end-to-end test that relaunches the app with the same profile hung on Linux (47 of 48 tests passed on the first
+  GitHub run). The test now clears Chromium's leftover single-instance lock files before relaunching, and launch failures
+  fail within 30 s with a readable message instead of a one-minute timeout.
+
 ## v0.1.0 — first release (November 2026)
 
 The first public version: an offline desktop explorer for antibiotic-resistance genes in public bacterial genome data.

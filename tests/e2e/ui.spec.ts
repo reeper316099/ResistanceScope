@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { action, launch, ready, settled, type Launched } from "./helpers";
+import { action, clearInstanceLock, launch, ready, settled, type Launched } from "./helpers";
 
 let ctx: Launched;
 let saveDir: string;
@@ -314,12 +314,14 @@ test("dark mode toggles, is remembered across restarts, and charts redraw in dar
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await settled(page);
   await app.close();
+  clearInstanceLock(userData);
   const again = await launch(userData);
   await ready(again.page);
   await expect(again.page.locator("html")).toHaveAttribute("data-theme", "dark");
   await action(again.page, "toggle-dark-mode");
   await expect(again.page.locator("html")).toHaveAttribute("data-theme", "light");
   await again.app.close();
+  clearInstanceLock(userData);
   ctx = await launch(userData); // so afterAll has a live app to close
   await ready(ctx.page);
 });
