@@ -1,15 +1,17 @@
 # dependencies and build output
-node_modules/
-out/
-dist/
-release/
-coverage/
 # python
-pipeline/.venv/
-__pycache__/
+# raw downloads are never committed (see pipeline/README.md)
+.DS_Store
 .pytest_cache/
 .ruff_cache/
-# raw downloads are never committed (see pipeline/README.md)
+__pycache__/
+coverage/
+dist/
+node_modules/
+out/
+pipeline/.venv/
 pipeline/raw/
-.DS_Store
 pipeline/raw_download.out
+playwright-report/
+release/
+test-results/

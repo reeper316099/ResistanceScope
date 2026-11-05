@@ -1,0 +1,43 @@
+{
+  "name": "resistancescope",
+  "version": "0.1.0",
+  "description": "Offline desktop explorer for antibiotic-resistance genes in public bacterial genome data. Educational use only.",
+  "author": "reeper316099",
+  "license": "MIT",
+  "private": true,
+  "main": "out/main/index.js",
+  "homepage": "https://github.com/reeper316099/ResistanceScope",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reeper316099/ResistanceScope.git"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "22.20.5",
+    "electron": "45.2.3",
+    "electron-vite": "6.0.0",
+    "eslint": "10.14.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "8.3.5",
+    "vitest": "5.1.0",
+    "zod": "4.6.7"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.renderer.json && tsc --noEmit -p tsconfig.preload.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:e2e": "electron-vite build && playwright test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "data:rebuild": "node scripts/data-rebuild.mjs",
+    "dev:bg": "node scripts/dev-background.mjs"
+  }
+}
