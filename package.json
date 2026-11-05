@@ -49,6 +49,7 @@
     "data:rebuild": "node scripts/data-rebuild.mjs",
     "dev:bg": "node scripts/dev-background.mjs",
     "test:coverage": "vitest run --coverage",
-    "icons": "electron scripts/make-icons.cjs"
+    "icons": "electron scripts/make-icons.cjs",
+    "screenshots": "node scripts/screenshots.mjs"
   }
 }

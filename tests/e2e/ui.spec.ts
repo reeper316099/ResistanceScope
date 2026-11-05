@@ -3,13 +3,14 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
-import { action, launch, settled, type Launched } from "./helpers";
+import { action, launch, ready, settled, type Launched } from "./helpers";
 
 let ctx: Launched;
 let saveDir: string;
 
 test.beforeAll(async () => {
   ctx = await launch();
+  await ready(ctx.page);
   saveDir = mkdtempSync(join(tmpdir(), "rs-save-"));
   // Replace the native save dialog so exports can be tested without a human: it "chooses" a file in saveDir.
   await ctx.app.evaluate(({ dialog }, dir) => {
@@ -314,9 +315,11 @@ test("dark mode toggles, is remembered across restarts, and charts redraw in dar
   await settled(page);
   await app.close();
   const again = await launch(userData);
+  await ready(again.page);
   await expect(again.page.locator("html")).toHaveAttribute("data-theme", "dark");
   await action(again.page, "toggle-dark-mode");
   await expect(again.page.locator("html")).toHaveAttribute("data-theme", "light");
   await again.app.close();
   ctx = await launch(userData); // so afterAll has a live app to close
+  await ready(ctx.page);
 });

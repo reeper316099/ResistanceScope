@@ -27,6 +27,7 @@ import { SelectionStore } from "./selection";
 import { createSearchBox } from "./searchBox";
 import { applyTheme, currentTheme, systemTheme } from "./theme";
 import { toast } from "./toast";
+import { hideTooltip } from "./tooltip";
 import { createAboutView } from "./views/aboutView";
 import { createDrugClassView } from "./views/drugClassView";
 import { createGeneView } from "./views/geneView";
@@ -389,6 +390,7 @@ export async function startApp(root: HTMLElement): Promise<void> {
 
     function show(route: Route): void {
       current?.dispose();
+      hideTooltip(); // a tooltip over a removed element would otherwise stay on screen
       selection.clear();
       clear(viewHost);
       current = build(route);

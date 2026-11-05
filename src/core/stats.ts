@@ -74,13 +74,16 @@ export function formatCount(value: number): string {
   return integerFormat.format(value);
 }
 
-/** Formats a proportion (0..1) as a percentage with one decimal; never rounds a non-zero value to 0%. */
+/** Formats a proportion (0..1) as a percentage (one decimal, two near 0% and 100%); never rounds a non-zero value to 0%. */
 export function formatPercent(p: number): string {
   if (p <= 0) return "0%";
   if (p >= 1) return "100%";
   const pct = p * 100;
-  if (pct < 0.1) return "<0.1%";
-  if (pct > 99.9) return ">99.9%";
+  // Extra decimals at the extremes so a 95% interval near 0% or 100% does not collapse to "<0.1%–<0.1%".
+  if (pct < 0.01) return "<0.01%";
+  if (pct < 0.1) return `${pct.toFixed(2)}%`;
+  if (pct > 99.99) return ">99.99%";
+  if (pct > 99.9) return `${pct.toFixed(2)}%`;
   return `${pct.toFixed(1)}%`;
 }
 

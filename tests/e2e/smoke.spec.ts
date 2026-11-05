@@ -1,5 +1,5 @@
 // Smoke tests against the real built Electron app (run `npm run build` first; `npm run test:e2e` does it).
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -100,6 +100,43 @@ test("serves a strict Content-Security-Policy and refuses path traversal", async
   expect(statuses.every((s) => s >= 400)).toBe(true);
 });
 
+test("the CSP blocks eval, new Function and injected inline scripts in the page's own scripts", async () => {
+  // page.evaluate() goes through the DevTools protocol, which bypasses the CSP for eval, so it cannot prove anything.
+  // Instead a small same-origin script file (allowed by script-src 'self') runs as the page's own code and reports.
+  const probe = join(process.cwd(), "out", "renderer", "csp-probe.js");
+  writeFileSync(
+    probe,
+    `(function () {
+       var r = {};
+       try { r.eval = String(eval("1 + 1")); } catch (e) { r.eval = e.name; }
+       try { r.fn = String(new Function("return 1")()); } catch (e) { r.fn = e.name; }
+       document.documentElement.setAttribute("data-csp-probe", JSON.stringify(r));
+     })();`,
+  );
+  try {
+    await page.evaluate(() => {
+      const script = document.createElement("script");
+      script.src = "app://app/csp-probe.js";
+      document.body.append(script);
+    });
+    await page.waitForFunction(() => document.documentElement.hasAttribute("data-csp-probe"));
+    const result = await page.evaluate(() =>
+      document.documentElement.getAttribute("data-csp-probe"),
+    );
+    expect(JSON.parse(result ?? "{}")).toEqual({ eval: "EvalError", fn: "EvalError" });
+  } finally {
+    rmSync(probe, { force: true });
+  }
+  // An inline script injected into the DOM must not run either.
+  const inline = await page.evaluate(() => {
+    const script = document.createElement("script");
+    script.textContent = "window.__injected = 'ran'";
+    document.body.append(script);
+    return String((window as unknown as { __injected?: string }).__injected);
+  });
+  expect(inline).toBe("undefined");
+});
+
 test("makes no network requests: external fetches fail", async () => {
   const outcomes = await page.evaluate(async () => {
     const tryFetch = async (url: string): Promise<string> => {
@@ -148,7 +185,9 @@ test("no console errors or unhandled rejections during the session", () => {
   // The deliberately blocked requests above log "Failed to fetch"-style network errors; anything else is a bug.
   const unexpected = consoleErrors.filter(
     (e) =>
-      !/example\.com|localhost:9|ERR_BLOCKED_BY_CLIENT|net::ERR|Failed to load resource/.test(e),
+      !/example\.com|localhost:9|ERR_BLOCKED_BY_CLIENT|net::ERR|Failed to load resource|Content Security Policy|Refused to/.test(
+        e,
+      ),
   );
   expect(unexpected).toEqual([]);
 });

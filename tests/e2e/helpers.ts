@@ -14,10 +14,11 @@ export interface Launched {
 /** Starts the built app in background mode (no focus stealing) with a given or fresh profile folder. */
 export async function launch(
   userData: string = mkdtempSync(join(tmpdir(), "rs-e2e-")),
+  extraEnv: Record<string, string> = {},
 ): Promise<Launched> {
   const app = await electron.launch({
     args: [".", `--user-data-dir=${userData}`],
-    env: { ...process.env, RS_BACKGROUND: "1" },
+    env: { ...process.env, RS_BACKGROUND: "1", ...extraEnv },
   });
   const page = await app.firstWindow();
   const errors: string[] = [];
@@ -28,8 +29,6 @@ export async function launch(
   await app.evaluate(({ BrowserWindow }) => {
     BrowserWindow.getAllWindows()[0]?.setSize(1440, 960);
   });
-  await page.waitForSelector("#data-footer");
-  await page.waitForSelector(".view-host .card");
   return { app, page, userData, errors };
 }
 
@@ -45,4 +44,19 @@ export async function settled(page: Page): Promise<void> {
   await page.waitForFunction(() => document.querySelectorAll(".skeleton").length === 0, null, {
     timeout: 30_000,
   });
+}
+
+/** Waits until the data loaded and the first view is on screen (not used for broken-data launches). */
+export async function ready(page: Page): Promise<void> {
+  await page.waitForSelector("#data-footer");
+  await page.waitForSelector(".view-host .card");
+}
+
+/** Opens an entity through the global search box (like a user would) and waits for the view to finish loading. */
+export async function openBySearch(page: Page, text: string): Promise<void> {
+  await action(page, "focus-search");
+  await page.keyboard.type(text);
+  await page.getByRole("option").first().waitFor();
+  await page.keyboard.press("Enter");
+  await settled(page);
 }

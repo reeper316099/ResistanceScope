@@ -37,7 +37,7 @@ export function createTrendChart(
 ): { element: HTMLElement; handle: ChartHandle } {
   applyChartDefaults();
   const colors = themeColors();
-  const axisWidth = options.yAxisWidth ?? 58;
+  const axisWidth = options.yAxisWidth ?? 78;
   const first = series[0]?.points ?? [];
   const labels = first.map((p) => String(p.year));
   const isolates = first.map((p) => p.isolates);

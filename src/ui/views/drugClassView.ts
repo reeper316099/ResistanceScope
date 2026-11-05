@@ -184,7 +184,7 @@ export function createDrugClassView(ctx: AppContext, classId: string): View {
           chart.element,
           top && isShown(top.estimate)
             ? whatThisShows(
-                `In the data, ${top.name} has the highest share of isolates with a ${label} gene: ${formatCount(top.estimate.k)} of ${formatCount(top.estimate.n)}. Organisms are sampled very unevenly (see the n next to each bar).`,
+                `In the data, ${top.name} has the highest share of isolates with a ${label} gene: ${formatCount(top.estimate.k)} of ${formatCount(top.estimate.n)} isolates. Organisms are sampled very unevenly (see the n next to each bar).`,
               )
             : null,
         );

@@ -26,7 +26,10 @@ const devOrigin: string | null = devUrl === null ? null : new URL(devUrl).origin
 const roots: AppRoots = {
   renderRoot: join(__dirname, "../renderer"),
   // In a packaged app the data folder is copied next to the app (electron-builder extraResources).
-  dataRoot: app.isPackaged ? join(process.resourcesPath, "data") : join(app.getAppPath(), "data"),
+  dataRoot: app.isPackaged
+    ? join(process.resourcesPath, "data")
+    : // Test hook, ignored in packaged apps: lets the e2e tests point the app at deliberately broken data.
+      (process.env["RS_DATA_DIR"] ?? join(app.getAppPath(), "data")),
 };
 
 /**
