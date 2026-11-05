@@ -10,7 +10,7 @@ Windows and Linux were **not** tested locally; they are covered only by CI (Phas
 | 1 | `npm run typecheck` zero errors | **PASS** (ran) | 4 tsconfig projects, strict + `noUncheckedIndexedAccess` |
 | 2 | `npm run lint` zero problems, zero `any` | **PASS** (ran) | ESLint strict-type-checked; `tests/unit/hygiene.test.ts` also scans for `any`, `eval`, `innerHTML`, TODO markers |
 | 3 | Prettier clean | **PASS** (ran) | `npm run format:check` |
-| 4 | Pipeline: pytest all pass | **PASS** (ran) | 88 tests, 0.5 s |
+| 4 | Pipeline: pytest all pass | **PASS** (ran) | 92 tests, 0.5 s (88 at the time of Phase 6; 4 added for the refresh-summary script) |
 | 5 | Pipeline run end to end | **PASS** (ran) | download ~2.3 GB (~35-45 min on this connection), aggregate 14 organisms in ~97 s, validate < 1 s; output byte-identical on re-run |
 | 6 | Shard sizes vs budget | **PASS** (ran) | total 3.05 MB of 25 MB; largest shard ≤ 2 MB (see table) |
 | 7 | Data spot-checks (>= 5 combos) | **PASS** (ran) | 12 of 12 match an independent standard-library script (`pipeline/spot_check.py`), see below |
@@ -91,7 +91,7 @@ Counted per organism from the shipped build (`pipeline/reports/quality_report.js
 | Download raw data (2.3 GB, one connection, polite) | ~35-45 min (connection-limited, 0.5-0.7 MB/s) |
 | Aggregate all 14 organisms | ~97 s |
 | Validate | < 1 s |
-| pytest (88) | 0.5 s |
+| pytest (92) | 0.5 s |
 | Vitest (273) | ~1 s |
 | Electron e2e (48) | ~23 s |
 | Screenshots (18) | ~13 s |

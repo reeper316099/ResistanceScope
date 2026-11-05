@@ -174,7 +174,7 @@ export function createAboutView(ctx: AppContext, section: string | undefined): V
       h(
         "p",
         null,
-        "World map shapes: Natural Earth (public domain) via the world-atlas package (ISC licence). Country names: Unicode CLDR (Unicode License v3, © 1991-2026 Unicode, Inc.). Libraries: Chart.js (MIT), d3-geo (ISC), topojson-client (ISC), zod (MIT), Electron (MIT). This app's code is MIT licensed.",
+        "World map shapes: Natural Earth (public domain) via the world-atlas package (ISC licence). Country names: Unicode CLDR (Unicode License v3, © 1991-2026 Unicode, Inc.). Libraries: Chart.js (MIT), d3-geo (ISC), topojson-client (ISC), zod (MIT), Electron (MIT). This app's code is MIT licensed. Full licence texts: THIRD-PARTY-NOTICES.md (in the repository and in the installed app's resources folder).",
       ),
       h(
         "p",

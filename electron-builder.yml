@@ -18,6 +18,10 @@ extraResources:
     to: data
     filter:
       - "**/*.json"
+  - from: THIRD-PARTY-NOTICES.md
+    to: THIRD-PARTY-NOTICES.md
+  - from: LICENSE
+    to: LICENSE
 
 asar: true
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
