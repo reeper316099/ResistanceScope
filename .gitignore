@@ -1,0 +1,15 @@
+# dependencies and build output
+node_modules/
+out/
+dist/
+release/
+coverage/
+# python
+pipeline/.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+# raw downloads are never committed (see pipeline/README.md)
+pipeline/raw/
+.DS_Store
+pipeline/raw_download.out

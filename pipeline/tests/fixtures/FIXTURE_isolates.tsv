@@ -1,0 +1,11 @@
+species_taxid	scientific_name	biosample_acc	collection_date	geo_loc_name	isolation_source	host	epi_type	AMR_genotypes	amrfinder_applied
+562	Escherichia coli	FIX1	2020	USA	urine	Homo sapiens	clinical	blaKPC-2,acrF	1
+562	Escherichia coli	FIX2	2020-05	USA: NC	blood	Homo sapiens	clinical	blaKPC-2,blaTEM-1,gyrA_S83L=POINT	1
+562	Escherichia coli	FIX3	2021	United Kingdom	ground beef	Bos taurus	environmental/other	blaTEM-1,blaTEM-1	1
+562	Escherichia coli	FIX4	NULL	NULL	NULL	NULL	NULL	NULL	1
+562	Escherichia coli	FIX5	2021-03-04	Germany: Berlin	wastewater	NULL	environmental/other	blaCTX-M-15,blaKPC-2=PARTIAL	1
+562	Escherichia coli	FIX1	2020	USA	urine	Homo sapiens	clinical	blaKPC-2	1
+562	Escherichia coli	FIX7	1850	USSR	NULL	NULL	clinical	cirA_W243Ter,blaTEM	1
+562	Escherichia coli	FIX8	2020	USA	Animal-Swine-Sow (cecal)	NULL	NULL	tet(A),foo-1	1
+999	Fixtureus other	FIX9	2020	USA	urine	Homo sapiens	clinical	blaKPC-2	1
+562	Escherichia coli	FIX10	2020	USA	urine	Homo sapiens	clinical	blaKPC-2	0
