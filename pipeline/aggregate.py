@@ -40,6 +40,8 @@ class OrganismCounts:
     genes: dict[str, GeneCounts] = field(default_factory=lambda: defaultdict(GeneCounts))
     classes_core: Counter[str] = field(default_factory=Counter)  # isolates with >=1 core gene of class
     classes_all: Counter[str] = field(default_factory=Counter)  # same, counting "plus" genes too
+    class_year_core: Counter[tuple[str, int]] = field(default_factory=Counter)  # (class, year) -> isolates
+    class_year_all: Counter[tuple[str, int]] = field(default_factory=Counter)
     seen_biosamples: set[str] = field(default_factory=set)
     duplicates_removed: int = 0
     with_year: int = 0
@@ -117,11 +119,22 @@ class Aggregator:
             self.genes_seen[gene_id] = gene
         oc.classes_core.update(core_classes)
         oc.classes_all.update(all_classes)
+        if iso.year is not None:  # isolates without a usable year are left out of the per-year tables
+            oc.class_year_core.update((c, iso.year) for c in core_classes)
+            oc.class_year_all.update((c, iso.year) for c in all_classes)
 
 
 def _sorted_counts(counter: Counter) -> dict[str, int]:
     """Return counts as a plain dict with sorted string keys (so output order is deterministic)."""
     return {str(k): counter[k] for k in sorted(counter)}
+
+
+def _by_class_then_year(counter: Counter[tuple[str, int]]) -> dict[str, dict[str, int]]:
+    """Reshape {(class, year): n} into {class: {"year": n}} with sorted keys."""
+    out: dict[str, dict[str, int]] = {}
+    for (cid, year), n in sorted(counter.items()):
+        out.setdefault(cid, {})[str(year)] = n
+    return out
 
 
 def build_shard(org: Organism, oc: OrganismCounts) -> tuple[dict, int]:
@@ -152,6 +165,8 @@ def build_shard(org: Organism, oc: OrganismCounts) -> tuple[dict, int]:
         "genes": genes,
         "drugClassIsolates": _sorted_counts(oc.classes_core),
         "drugClassIsolatesAll": _sorted_counts(oc.classes_all),
+        "drugClassByYear": _by_class_then_year(oc.class_year_core),
+        "drugClassByYearAll": _by_class_then_year(oc.class_year_all),
     }
     return shard, omitted
 

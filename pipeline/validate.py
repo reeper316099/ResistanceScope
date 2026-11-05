@@ -181,6 +181,42 @@ def validate_shard(
     for cid, v in core.items():
         if is_count(v) and v > allc.get(cid, 0):
             rep.err(f"{w}.drugClassIsolates.{cid}", "core count exceeds the all-genes count")
+    validate_class_years(rep, w, shard, classes, max_year)
+
+
+def validate_class_years(rep: Report, w: str, shard: dict, classes: set[str], max_year: int) -> None:
+    """Check the per-year drug-class tables: known classes, plausible years, parts never exceed totals."""
+    by_year = shard.get("byYear", {})
+    for name, totals in (("drugClassByYear", shard.get("drugClassIsolates", {})),
+                         ("drugClassByYearAll", shard.get("drugClassIsolatesAll", {}))):
+        table = shard.get(name)
+        if not isinstance(table, dict):
+            rep.err(f"{w}.{name}", "expected an object of {class: {year: count}}")
+            continue
+        for cid, years in table.items():
+            if cid not in classes:
+                rep.err(f"{w}.{name}", f"unknown drug class {cid!r}")
+            if not isinstance(years, dict):
+                rep.err(f"{w}.{name}.{cid}", "expected an object of {year: count}")
+                continue
+            total = totals.get(cid, 0) if is_count(totals.get(cid, 0)) else 0
+            for y in years:
+                if not _YEAR.match(y) or not config.MIN_VALID_YEAR <= int(y) <= max_year:
+                    rep.err(f"{w}.{name}.{cid}", f"implausible year {y!r}")
+            s = check_counts(rep, f"{w}.{name}.{cid}", years, None, total)
+            if s > total:
+                rep.err(f"{w}.{name}.{cid}", f"parts sum to {s}, more than the class total {total}")
+            for y, v in years.items():
+                denom = by_year.get(y, 0)
+                if is_count(v) and is_count(denom) and v > denom:
+                    rep.err(f"{w}.{name}.{cid}.{y}", f"{v} exceeds the organism total {denom} for that year")
+    for cid, years in shard.get("drugClassByYear", {}).items():
+        if not isinstance(years, dict):
+            continue
+        for y, v in years.items():
+            allv = shard.get("drugClassByYearAll", {}).get(cid, {}).get(y, 0)
+            if is_count(v) and is_count(allv) and v > allv:
+                rep.err(f"{w}.drugClassByYear.{cid}.{y}", "core count exceeds the all-genes count")
 
 
 def validate_data_dir(data_dir: Path, report_path: Path | None = None, require_report: bool = False) -> Report:

@@ -57,4 +57,7 @@ You can delete `pipeline/raw/` after a build; only the next rebuild needs it aga
 - `index.json` genes: `mechanism` and `aroId` (CARD-based) are replaced by `geneType`, `scope`, `productName`, `refseqProtein`.
 - `scope` is `core` or `plus`; the app's "include intrinsic genes" toggle switches between them.
 - Organism shards add `drugClassIsolatesAll` (counts that include `plus` genes) next to `drugClassIsolates` (core genes only).
+- Shards also carry `drugClassByYear` / `drugClassByYearAll` (`{class: {year: isolates}}`) so the Drug class view can draw class-level trends honestly (a union of genes cannot be rebuilt from per-gene yearly counts).
+- A gene missing from a shard means it was seen in fewer than 5 isolates of that organism (or none); the app never reads that as 0%.
+- Counts are broken down by year, by country and by source separately (no cross-tables, to stay small), so the app's source filter cannot be combined with year or country views.
 - Loss-of-function calls such as `cirA_W243Ter` are grouped as one `cirA_disrupted` entry, never merged with the intact gene.

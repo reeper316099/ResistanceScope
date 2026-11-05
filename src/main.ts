@@ -2,7 +2,7 @@
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/components.css";
-import { loadManifest } from "./core/dataLoader";
+import { DataStore } from "./core/dataLoader";
 import type { AppInfo, Loadable, Manifest } from "./shared/types";
 import { listenToMenu } from "./ui/menuEvents";
 import { renderShell } from "./ui/shell";
@@ -26,7 +26,10 @@ async function start(app: HTMLElement): Promise<void> {
   let manifest: Loadable<Manifest> = { status: "loading" };
   let info: AppInfo | null = null;
   renderShell(app, manifest, info);
-  [info, manifest] = await Promise.all([window.resistanceScope.getAppInfo(), loadManifest()]);
+  [info, manifest] = await Promise.all([
+    window.resistanceScope.getAppInfo(),
+    new DataStore().loadManifest(),
+  ]);
   renderShell(app, manifest, info);
 }
 

@@ -59,6 +59,21 @@ def test_drug_class_rollups(aggregated) -> None:
     assert s["drugClassIsolatesAll"]["EFFLUX"] == 1 and "EFFLUX" not in s["drugClassIsolates"]
 
 
+def test_drug_class_by_year(aggregated) -> None:
+    """Per-year class counts by hand: FIX4 and FIX7 have no year, so they never appear in these tables."""
+    agg, _ = aggregated
+    s = shard_of(agg)
+    assert s["drugClassByYear"] == {
+        "BETA-LACTAM": {"2020": 2, "2021": 2},  # 2020: FIX1, FIX2; 2021: FIX3, FIX5
+        "BETA-LACTAM/CARBAPENEM": {"2020": 2},  # FIX1, FIX2
+        "BETA-LACTAM/CEPHALOSPORIN": {"2021": 1},  # FIX5
+        "QUINOLONE": {"2020": 1},  # FIX2
+        "TETRACYCLINE": {"2020": 1},  # FIX8
+    }
+    assert s["drugClassByYearAll"]["EFFLUX"] == {"2020": 1}  # FIX1's 'plus' gene acrF
+    assert "EFFLUX" not in s["drugClassByYear"]
+
+
 def test_quality_counters(aggregated) -> None:
     """Duplicates, partial hits, unmapped calls and ignored species are all counted, not hidden."""
     agg, parse_log = aggregated

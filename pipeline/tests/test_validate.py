@@ -43,6 +43,31 @@ def test_good_data_passes(data_dir: Path) -> None:
         ("core > all", lambda s: s["drugClassIsolates"].__setitem__("TETRACYCLINE", 7), "exceeds"),
         ("gene not in index", lambda s: s["genes"][0].__setitem__("geneId", "ghost"), "not in index.json"),
         ("isolate count differs", lambda s: s.__setitem__("isolateCount", 8), "differs from index.json"),
+        (
+            "class-year exceeds organism year",
+            lambda s: s["drugClassByYear"]["BETA-LACTAM"].__setitem__("2020", 4),
+            "exceeds",
+        ),
+        (
+            "class-year parts exceed class total",
+            lambda s: s["drugClassByYear"]["QUINOLONE"].__setitem__("2021", 1),
+            "parts sum to",
+        ),
+        (
+            "class-year unknown class",
+            lambda s: s["drugClassByYear"].__setitem__("MAGIC", {"2020": 1}),
+            "unknown drug class",
+        ),
+        (
+            "class-year implausible year",
+            lambda s: s["drugClassByYear"]["QUINOLONE"].__setitem__("1801", 0),
+            "implausible year",
+        ),
+        (
+            "class-year core > all",
+            lambda s: s["drugClassByYearAll"]["QUINOLONE"].__setitem__("2020", 0),
+            "core count exceeds",
+        ),
         ("accession leaked", lambda s: s.__setitem__("note", "SAMN12345678"), "accession"),
     ],
 )

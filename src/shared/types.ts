@@ -1,10 +1,26 @@
 // Shared types used by the main process, the preload script and the renderer, so the IPC contract
 // is type-checked on both sides. Data types are inferred from the zod schemas (one source of truth).
 import type { z } from "zod";
-import type { ManifestSchema, SaveFileRequestSchema } from "./schemas";
+import type {
+  DrugClassInfoSchema,
+  GeneInfoSchema,
+  ISOLATION_SOURCES,
+  IndexSchema,
+  ManifestSchema,
+  OrganismInfoSchema,
+  OrganismShardSchema,
+  SaveFileRequestSchema,
+} from "./schemas";
 
 export type Manifest = z.infer<typeof ManifestSchema>;
 export type SaveFileRequest = z.infer<typeof SaveFileRequestSchema>;
+export type IndexData = z.infer<typeof IndexSchema>;
+export type OrganismInfo = z.infer<typeof OrganismInfoSchema>;
+export type GeneInfo = z.infer<typeof GeneInfoSchema>;
+export type DrugClassInfo = z.infer<typeof DrugClassInfoSchema>;
+export type OrganismShard = z.infer<typeof OrganismShardSchema>;
+/** One of the five isolation-source buckets (clinical, food, environmental, animal, other). */
+export type IsolationSource = (typeof ISOLATION_SOURCES)[number];
 
 /** A value that is still loading, failed with a message, or is ready (no loose booleans). */
 export type Loadable<T> =
